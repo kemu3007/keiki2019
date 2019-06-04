@@ -8,10 +8,9 @@ BMX055::BMX055()
     pitch = roll = yaw = 0.0;
 }
 
-void BMX055::init()
-{
+void BMX055::init(){
     Wire.begin();
-    MadgwickFilter.begin(10);
+    MadgwickFilter.begin(5);
     //------------------------------------------------------------//
     Wire.beginTransmission(Addr_Accl);
     Wire.write(0x0F); // Select PMU_Range register
@@ -80,6 +79,12 @@ void BMX055::init()
     Wire.write(0x52); // Select Mag register
     Wire.write(0x16); // No. of Repetitions for Z-Axis = 15
     Wire.endTransmission();
+
+    
+    def_pitch = 0;
+    def_roll = 0;
+    def_yaw = 0;
+    counter=0;
 }
 
 void BMX055::set_accl()
@@ -167,13 +172,22 @@ void BMX055::set_mag()
         zMag -= 32768;
 }
 
-void BMX055::processing()
+void BMX055::set_deg()
 {
     set_accl();
     set_gyro();
     set_mag();
-    MadgwickFilter.update(xGyro, yGyro, zGyro, xAccl, yAccl, zAccl, xMag, yMag, zMag);
-    pitch = MadgwickFilter.getPitch();
-    roll = MadgwickFilter.getRoll();
+    MadgwickFilter.updateIMU(xGyro, yGyro, zGyro, xAccl, yAccl, zAccl);
+    //MadgwickFilter.update(xGyro, yGyro, zGyro, xAccl, yAccl, zAccl, xMag, yMag, zMag);
+    pitch = MadgwickFilter.getRoll();
+    roll = MadgwickFilter.getPitch(); //センサーを置く向きに応じて変更する
     yaw = MadgwickFilter.getYaw();
+    if(counter==1){
+      def_pitch = pitch;
+      def_roll = roll;
+      def_yaw = yaw;
+      data = "def_oyr," + String(pitch) + "," + String(roll) + "," + String(yaw) + ",";
+      return;
+    }
+    data = "oyr," + String(pitch-def_pitch) + "," + String(roll-def_roll) + "," + String(yaw-def_yaw) + ",";
 }

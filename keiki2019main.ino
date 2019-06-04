@@ -1,20 +1,29 @@
-#include "bmx055.h"
+#include "definition.h"
 
+DATA data;
+AIRSPEED airspeed(A0);
 BMX055 bmx055;
-
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
+  Serial.println("started!");
   bmx055.init();
+  airspeed.init();
 }
 
 void loop()
 {
-  bmx055.processing();
-  Serial.print(bmx055.pitch);
-  Serial.print(",");
-  Serial.print(bmx055.roll);
-  Serial.print(",");
-  Serial.println(bmx055.yaw);
-  delay(50);
+  if(bmx055.counter%2 == 1){
+    bmx055.set_deg();
+    data.append(bmx055.data);
+    airspeed.set();
+    data.append(airspeed.data);
+    Serial.println(bmx055.data);
+    Serial.println(airspeed.data);
+  }
+  if(bmx055.counter%50 == 0){
+    data.save();
+  }
+  bmx055.counter++;
+  delay(100);
 }

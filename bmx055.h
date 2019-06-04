@@ -16,12 +16,18 @@ public:
     void set_accl();
     void set_gyro();
     void set_mag();
-    void processing();
+    
+    void set_deg();
 
     Madgwick MadgwickFilter;
     float xAccl, yAccl, zAccl;
     float xGyro, yGyro, zGyro;
     int xMag, yMag, zMag;
     float pitch, roll, yaw;
+    String data;
+
+    int counter;
+
+    float def_pitch, def_roll, def_yaw;
 };
 #endif
